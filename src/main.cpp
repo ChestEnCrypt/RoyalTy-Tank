@@ -79,8 +79,12 @@ struct TextHeap {
 
 class AssetManager {
 public:
+    vector<TextureHeap> textures;
+    vector<SpriteHeap> sprites;
+    vector<FontHeap> fonts;
+    vector<TextHeap> texts;
                                                                             // FIND
-    Texture& findTexture(const string& path) {
+    Texture& myTexture(const string& path) {
 
         for (TextureHeap& texHeap : textures) {
             if (texHeap.path == path) {
@@ -88,23 +92,24 @@ public:
             }
         }
 
-        // if texture is not found
-        return includeTexture(path);
+        textures.push_back(TextureHeap(path));
+
+        return textures.back().texture;
     }
 
-    Sprite& findSprite(const string& Id, Texture& texture = Texture()) {
+    Sprite& mySprite(const string& Id, Texture& texture = Texture()) {
 
         for (SpriteHeap& sprHeap : sprites) {
             if (sprHeap.Id == Id) {
                 return sprHeap.sprite; // if sprite is found
             }
         }
+        sprites.push_back(SpriteHeap(Id, texture));
 
-        // if sprite is not found
-        return includeSprite(Id, textures[0].texture);
+        return sprites.back().sprite;
     }
 
-    Font& findFont(const string& path) {
+    Font& myFont(const string& path) {
 
         for (FontHeap& fntHeap : fonts) {
             if (fntHeap.path == path) {
@@ -112,10 +117,12 @@ public:
             }
         }
 
-        return includeFont(path);
+        fonts.push_back(FontHeap(path));
+
+        return fonts.back().font;
     }
 
-    Text& findText(const string Id) {
+    Text& myText(const string Id, Font& font = Font()) {
 
         for (TextHeap& txtHeap : texts) {
             if (txtHeap.Id == Id) {
@@ -123,51 +130,54 @@ public:
             }
         }
 
-        return includeText(Id, findFont("Consolas.ttf"));
-    }
-
-                                                                            // INCLUDE
-
-    Texture& includeTexture(const string& path) {
-        textures.push_back(TextureHeap(path));
-
-        // texture from path created
-        return textures.back().texture;
-    }
-
-    Sprite& includeSprite(const string& Id, const Texture& texture) {
-        sprites.push_back(SpriteHeap(Id, texture));
-
-        // sprite from Id & texture created
-        return sprites.back().sprite;
-    }
-
-    Font& includeFont(const string& path) {
-        fonts.push_back(FontHeap(path));
-
-        return fonts.back().font;
-    }
-
-    Text& includeText(const string& Id, const Font& font) {
         texts.push_back(TextHeap(Id, font));
 
         return texts.back().text;
     }
 
-private:
-    vector<TextureHeap> textures;
+                                                                            // INCLUDE
 
-    vector<SpriteHeap> sprites;
+    //Texture& includeTexture(const string& path) {
+    //    textures.push_back(TextureHeap(path));
 
-    vector<FontHeap> fonts;
+    //    // texture from path created
+    //    return textures.back().texture;
+    //}
 
-    vector<TextHeap> texts;
+    //Sprite& includeSprite(const string& Id, const Texture& texture) {
+    //    sprites.push_back(SpriteHeap(Id, texture));
+
+    //    // sprite from Id & texture created
+    //    return sprites.back().sprite;
+    //}
+
+    //Font& includeFont(const string& path) {
+    //    fonts.push_back(FontHeap(path));
+
+    //    return fonts.back().font;
+    //}
+
+    //Text& includeText(const string& Id, const Font& font) {
+    //    texts.push_back(TextHeap(Id, font));
+
+    //    return texts.back().text;
+    //}
 };
 
 class MainWindow{
 public:
+    AssetManager& asset;
+    RenderWindow& window;
+    RenderTexture renderTexture;
+    Vector2u windowSize;
+
     MainWindow(RenderWindow& window, AssetManager& asset) : window(window), asset(asset) {
-        asset.findFont("Consolas.ttf");
+
+        windowSize = window.getSize();
+
+        if (!renderTexture.create(1920, 1920)) {
+            cerr << "Can't create renderTexture" << endl;
+        }
     }
 
     virtual int SceneLogic() { return 0; }
@@ -196,23 +206,21 @@ public:
         }
     }
     int num = 0;
-private:
-    AssetManager& asset;
-protected:
-    RenderWindow& window;
 };
 
 class MenuWindow : public MainWindow {
 public:
-    MenuWindow(RenderWindow& window, AssetManager& asset) : MainWindow(window, asset), asset(asset) {
+    MenuWindow(MainWindow& mainWindow) : MainWindow(mainWindow.window, mainWindow.asset) {
         //asset.includeTexture("assets/images/entity/tank.png");
-        asset.includeSprite("myTank", asset.findTexture("assets/images/entity/tank.png"));
-        asset.findSprite("myTank").setOrigin(32, 32);
-        asset.findSprite("myTank").setRotation(90);
+        
+        asset.mySprite("myTank", asset.myTexture("assets/images/entity/tank.png"));
+        asset.mySprite("myTank").setOrigin(32, 32);
+        asset.mySprite("myTank").setRotation(90);
 
-        asset.includeText("1", asset.findFont("Consolas.ttf")).setString("PRESS SPACE TO CONTINUE");
-        asset.findText("1").setCharacterSize(32);
-        asset.findText("1").setPosition(300, 540);
+        asset.myText("1", asset.myFont("Consolas.ttf")).setString("PRESS SPACE TO CONTINUE");
+        asset.myText("1").setCharacterSize(32);
+        asset.myText("1").setPosition(300, 540);
+        
 
         cout << "The necessary assets are included" << endl;
     }
@@ -229,12 +237,10 @@ public:
 
     int SceneDraw() override {
 
-        window.draw(asset.findText("1"));
+        window.draw(asset.myText("1"));
 
         return 0;
     }
-private:
-    AssetManager& asset;
 };
 
 class GameWindow : public MainWindow {
@@ -245,15 +251,13 @@ public:
 
     MyTank myTank;
 
-    GameWindow(RenderWindow& window, AssetManager& asset)
-        : MainWindow(window, asset), asset(asset) {//myTank(asset.includeSprite("MyTank", asset.findTexture("assets/images/entity/tank.png")))
+    GameWindow(MainWindow& mainWindow) : MainWindow(mainWindow.window, mainWindow.asset) {
 
-        asset.includeSprite("MoneyBlock", asset.findTexture("assets/images/blocks/moneyBlock.png"));
-        asset.includeSprite("GrassFloor", asset.findTexture("assets/images/floor/grass.png"));
-        asset.findSprite("MyTank", asset.findTexture("assets/images/entity/tank.png"));
+        asset.mySprite("GrassFloor", asset.myTexture("assets/images/floor/grass.png"));
+        asset.mySprite("MyTank", asset.myTexture("assets/images/entity/tank.png"));
 
-        asset.findSprite("GrassFloor").setOrigin(128, 128);
-        asset.findSprite("MyTank").setOrigin(32, 32);
+        asset.mySprite("GrassFloor").setOrigin(128, 128);
+        asset.mySprite("MyTank").setOrigin(32, 32);
 
         RenderTexture renderTexture;
         if (!renderTexture.create(1920, 1920)) {
@@ -286,20 +290,17 @@ public:
 
         for (int i = 0; i < 960 + 256; i+=256) {
             for (int j = 0; j < 600 + 256; j+=256) {
-                asset.findSprite("GrassFloor").setPosition(i, j);
-                window.draw(asset.findSprite("GrassFloor"));
+                asset.mySprite("GrassFloor").setPosition(i, j);
+                window.draw(asset.mySprite("GrassFloor"));
             }
         }
 
-        asset.findSprite("MyTank").setPosition(myTank.mySpriteCoor[0], myTank.mySpriteCoor[1]);
-        asset.findSprite("MyTank").setRotation(myTank.mySpriteCoor[2]);
-        window.draw(asset.findSprite("MyTank"));
+        asset.mySprite("MyTank").setPosition(myTank.mySpriteCoor[0], myTank.mySpriteCoor[1]);
+        asset.mySprite("MyTank").setRotation(myTank.mySpriteCoor[2]);
+        window.draw(asset.mySprite("MyTank"));
 
         return 0;
     }
-
-private:
-    AssetManager& asset;
 };
 
 class SceneManager {
@@ -316,12 +317,13 @@ int main() {
     AssetManager asset;
 
     RenderWindow window(VideoMode(960, 600), "RoyalTy-Tank");
+    MainWindow mainWindow(window, asset);
     SceneManager sceneManager;
 
-    MenuWindow menu(window, asset);
+    MenuWindow menu(mainWindow);
     sceneManager.RunScene(menu);
 
-    GameWindow game(window, asset);
+    GameWindow game(mainWindow);
     sceneManager.RunScene(game);
 
     return 0;
