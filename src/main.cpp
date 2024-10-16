@@ -17,12 +17,14 @@ struct TextureHeap {
     Texture texture;
 
     TextureHeap(const string& newPath) {
-        if (!texture.loadFromFile("Debug/" + newPath)) {
+        if (!texture.loadFromFile(newPath)) {
             cerr << "Failed to load texture from " << newPath << endl;
-            if (!texture.loadFromFile("Debug/" + path)) {
+            if (!texture.loadFromFile(path)) {
                 cerr << "Failed to load texture from " << path << endl;
             }
-            cerr << "Loaded texture from " << path << endl;
+            else {
+                cerr << "Loaded texture from " << path << endl;
+            }
         }
         else {
             path = newPath;
@@ -45,9 +47,9 @@ struct FontHeap {
     Font font;
 
     FontHeap(const string& newPath) {
-        if (!font.loadFromFile("Debug/assets/fonts/" + newPath)) {
+        if (!font.loadFromFile("assets/fonts/" + newPath)) {
             cerr << "Failed to load font from " << newPath << endl;
-            if (!font.loadFromFile("Debug/assets/fonts/" + path)) {
+            if (!font.loadFromFile("assets/fonts/" + path)) {
                 cerr << "Failed to load font from " << newPath << endl;
             }
             cerr << "Loaded texture from " << path << endl;
@@ -78,9 +80,6 @@ struct TextHeap {
 class AssetManager {
 public:
                                                                             // FIND
-
-    AssetManager(const string& path = "") : initialPath(path) {};
-
     Texture& findTexture(const string& path) {
 
         for (TextureHeap& texHeap : textures) {
@@ -156,8 +155,6 @@ public:
     }
 
 private:
-    string initialPath;
-
     vector<TextureHeap> textures;
 
     vector<SpriteHeap> sprites;
@@ -313,7 +310,10 @@ public:
 };
 
 int main() {
-    AssetManager asset("Debug");
+    filesystem::path currentPath = filesystem::current_path();
+    cout << "Directory: " << currentPath << endl;
+
+    AssetManager asset;
 
     RenderWindow window(VideoMode(960, 600), "RoyalTy-Tank");
     SceneManager sceneManager;

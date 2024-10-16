@@ -18,11 +18,11 @@ C:/Program Files/CMake/share/cmake-3.30/Modules/Platform/Windows-MSVC-CXX.cmake
 C:/Program Files/CMake/share/cmake-3.30/Modules/Platform/Windows-MSVC.cmake
 C:/Program Files/CMake/share/cmake-3.30/Modules/Platform/Windows.cmake
 C:/Program Files/CMake/share/cmake-3.30/Modules/Platform/WindowsPaths.cmake
-D:/Projects/.RoyalTy-Tank/build/CMakeFiles/3.30.3/CMakeCCompiler.cmake
-D:/Projects/.RoyalTy-Tank/build/CMakeFiles/3.30.3/CMakeCXXCompiler.cmake
-D:/Projects/.RoyalTy-Tank/build/CMakeFiles/3.30.3/CMakeRCCompiler.cmake
-D:/Projects/.RoyalTy-Tank/build/CMakeFiles/3.30.3/CMakeSystem.cmake
 D:/Projects/RoyalTy-Tank/CMakeLists.txt
+D:/Projects/RoyalTy-Tank/build/CMakeFiles/3.30.3/CMakeCCompiler.cmake
+D:/Projects/RoyalTy-Tank/build/CMakeFiles/3.30.3/CMakeCXXCompiler.cmake
+D:/Projects/RoyalTy-Tank/build/CMakeFiles/3.30.3/CMakeRCCompiler.cmake
+D:/Projects/RoyalTy-Tank/build/CMakeFiles/3.30.3/CMakeSystem.cmake
 D:/Projects/RoyalTy-Tank/lib/cmake/SFML/SFMLConfig.cmake
 D:/Projects/RoyalTy-Tank/lib/cmake/SFML/SFMLConfigDependencies.cmake
 D:/Projects/RoyalTy-Tank/lib/cmake/SFML/SFMLConfigVersion.cmake
