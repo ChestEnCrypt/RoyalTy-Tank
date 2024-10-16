@@ -5,8 +5,19 @@ project("RoyalTy-Tank")
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
+# Set output directories for executable files
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE})
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE})
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE})
+
+# Set intermediate directory (optional)
+set(CMAKE_INTERMEDIATE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}/Intermediate)
+
 # Add the source files
 add_executable("RoyalTy-Tank" src/main.cpp)
+
+# Set the project as the default target for running
+set_target_properties("RoyalTy-Tank" PROPERTIES FOLDER "Executable")
 
 # Manually specify the SFML directory containing sfml-config.cmake
 set(SFML_DIR "lib/cmake/SFML")
@@ -25,6 +36,7 @@ add_custom_command(TARGET "RoyalTy-Tank" POST_BUILD
 	COMMAND ${CMAKE_COMMAND} -E copy_directory
 	${CMAKE_SOURCE_DIR}/bin $<TARGET_FILE_DIR:RoyalTy-Tank>)
 
-add_custom_command(TARGET RoyalTy-Tank POST_BUILD
+# Copy the assets folder to the executable's working directory
+add_custom_command(TARGET "RoyalTy-Tank" POST_BUILD
 	COMMAND ${CMAKE_COMMAND} -E copy_directory
 	${CMAKE_SOURCE_DIR}/assets $<TARGET_FILE_DIR:RoyalTy-Tank>/assets)

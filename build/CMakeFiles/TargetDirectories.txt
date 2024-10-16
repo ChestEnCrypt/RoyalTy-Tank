@@ -1,3 +1,3 @@
-D:/Projects/.RoyalTy-Tank/build/CMakeFiles/RoyalTy-Tank.dir
-D:/Projects/.RoyalTy-Tank/build/CMakeFiles/ALL_BUILD.dir
-D:/Projects/.RoyalTy-Tank/build/CMakeFiles/ZERO_CHECK.dir
+D:/Projects/RoyalTy-Tank/build/CMakeFiles/RoyalTy-Tank.dir
+D:/Projects/RoyalTy-Tank/build/CMakeFiles/ALL_BUILD.dir
+D:/Projects/RoyalTy-Tank/build/CMakeFiles/ZERO_CHECK.dir
