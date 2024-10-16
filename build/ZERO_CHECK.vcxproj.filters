@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="D:\Projects\.RoyalTy-Tank\build\CMakeFiles\df6e9e00880e6ed8f1bf114184331ec5\generate.stamp.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{DF0422C9-F846-39C8-9727-BC236A5ADC2A}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
