@@ -83,7 +83,7 @@ public:
     vector<SpriteHeap> sprites;
     vector<FontHeap> fonts;
     vector<TextHeap> texts;
-                                                                            // FIND
+
     Texture& myTexture(const string& path) {
 
         for (TextureHeap& texHeap : textures) {
@@ -134,34 +134,6 @@ public:
 
         return texts.back().text;
     }
-
-                                                                            // INCLUDE
-
-    //Texture& includeTexture(const string& path) {
-    //    textures.push_back(TextureHeap(path));
-
-    //    // texture from path created
-    //    return textures.back().texture;
-    //}
-
-    //Sprite& includeSprite(const string& Id, const Texture& texture) {
-    //    sprites.push_back(SpriteHeap(Id, texture));
-
-    //    // sprite from Id & texture created
-    //    return sprites.back().sprite;
-    //}
-
-    //Font& includeFont(const string& path) {
-    //    fonts.push_back(FontHeap(path));
-
-    //    return fonts.back().font;
-    //}
-
-    //Text& includeText(const string& Id, const Font& font) {
-    //    texts.push_back(TextHeap(Id, font));
-
-    //    return texts.back().text;
-    //}
 };
 
 class MainWindow{
