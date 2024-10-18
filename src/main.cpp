@@ -12,145 +12,28 @@ using namespace sf;
 
 float PI = 3.14159f;
 
-struct TextureHeap {
-    string path = "assets/images/notFound.png";
-    Texture texture;
-
-    TextureHeap(const string& newPath) {
-        if (!texture.loadFromFile(newPath)) {
-            cerr << "Failed to load texture from " << newPath << endl;
-            if (!texture.loadFromFile(path)) {
-                cerr << "Failed to load texture from " << path << endl;
-            }
-            else {
-                cerr << "Loaded texture from " << path << endl;
-            }
-        }
-        else {
-            path = newPath;
-        }
-    }
-};
-
-struct SpriteHeap {
-    string Id;
-    Sprite sprite;
-
-    SpriteHeap(const string& Id, const Texture& texture) : Id(Id) {
-        sprite.setTexture(texture);
-    }
-};
-
-struct FontHeap {
-    // "D:\Projects\RoyalTy-Tank\build\Debug\assets\fonts\Consolas.ttf"
-    string path = "Consolas.ttf";
-    Font font;
-
-    FontHeap(const string& newPath) {
-        if (!font.loadFromFile("assets/fonts/" + newPath)) {
-            cerr << "Failed to load font from " << newPath << endl;
-            if (!font.loadFromFile("assets/fonts/" + path)) {
-                cerr << "Failed to load font from " << newPath << endl;
-            }
-            cerr << "Loaded texture from " << path << endl;
-        }
-        else {
-            path = newPath;
-        }
-    }
-};
-
-struct TextHeap {
-    string Id;
-    string message;
-    Font font;
-    int size = 24;
-    Color color = Color::White;
-
-    Text text;
-
-    TextHeap(const string& Id, const Font& font, const string& message = "Default Text") : Id(Id), font(font), message(message) {
-        text.setFont(font);
-        text.setCharacterSize(size);
-        text.setFillColor(color);
-        text.setString(message);
-    }
-};
-
-class AssetManager {
-public:
-    vector<TextureHeap> textures;
-    vector<SpriteHeap> sprites;
-    vector<FontHeap> fonts;
-    vector<TextHeap> texts;
-
-    Texture& myTexture(const string& path) {
-
-        for (TextureHeap& texHeap : textures) {
-            if (texHeap.path == path) {
-                return texHeap.texture; // if texture is found
-            }
-        }
-
-        textures.push_back(TextureHeap(path));
-
-        return textures.back().texture;
-    }
-
-    Sprite& mySprite(const string& Id, Texture& texture = Texture()) {
-
-        for (SpriteHeap& sprHeap : sprites) {
-            if (sprHeap.Id == Id) {
-                return sprHeap.sprite; // if sprite is found
-            }
-        }
-        sprites.push_back(SpriteHeap(Id, texture));
-
-        return sprites.back().sprite;
-    }
-
-    Font& myFont(const string& path) {
-
-        for (FontHeap& fntHeap : fonts) {
-            if (fntHeap.path == path) {
-                return fntHeap.font;
-            }
-        }
-
-        fonts.push_back(FontHeap(path));
-
-        return fonts.back().font;
-    }
-
-    Text& myText(const string Id, Font& font = Font()) {
-
-        for (TextHeap& txtHeap : texts) {
-            if (txtHeap.Id == Id) {
-                return txtHeap.text;
-            }
-        }
-
-        texts.push_back(TextHeap(Id, font));
-
-        return texts.back().text;
-    }
-};
-
 class MainWindow{
 public:
-    AssetManager& asset;
     RenderWindow& window;
     RenderTexture renderTexture;
     Vector2u windowSize;
+    VideoMode displayMode;
+    int a = 0;
 
-    MainWindow(RenderWindow& window, AssetManager& asset) : window(window), asset(asset) {
+    MainWindow(RenderWindow& window) : window(window) {
 
         windowSize = window.getSize();
+        displayMode = VideoMode();
 
-        if (!renderTexture.create(1920, 1920)) {
+        if (!renderTexture.create(1080, 1080)) {
             cerr << "Can't create renderTexture" << endl;
         }
     }
+
+    MainWindow(const MainWindow& mainWindow)
+        : window(mainWindow.window),
+        windowSize(mainWindow.windowSize),
+        displayMode(mainWindow.displayMode) {}
 
     virtual int SceneLogic() { return 0; }
     virtual int SceneDraw() { return 0; }
@@ -184,15 +67,16 @@ public:
 
 class MenuWindow : public MainWindow {
 public:
-    MenuWindow(MainWindow& mainWindow) : MainWindow(mainWindow.window, mainWindow.asset) {
+    Text press;
+    Font consolas;
 
-        asset.mySprite("myTank", asset.myTexture("assets/images/entity/tank.png"));
-        asset.mySprite("myTank").setOrigin(32, 32);
-        asset.mySprite("myTank").setRotation(90);
-
-        asset.myText("1", asset.myFont("Consolas.ttf")).setString("PRESS SPACE TO CONTINUE");
-        asset.myText("1").setCharacterSize(32);
-        asset.myText("1").setPosition(300, 540);
+    MenuWindow(MainWindow& mainWindow) : MainWindow(mainWindow) {
+        if (!consolas.loadFromFile("assets/fonts/Consolas.ttf")) {}
+        press.setFont(consolas);
+        press.setString("PRESS SPACE TO CONTINUE");
+        press.setCharacterSize(32);
+        press.setStyle(1);
+        press.setPosition(300, 540);
 
         cout << "The necessary assets are included" << endl;
     }
@@ -209,7 +93,7 @@ public:
 
     int SceneDraw() override {
 
-        window.draw(asset.myText("1"));
+        window.draw(press);
 
         return 0;
     }
@@ -217,25 +101,31 @@ public:
 
 class GameWindow : public MainWindow {
 public:
-    struct MyTank {
+    struct MyTank : Sprite {
         float mySpriteCoor[3] = { 256, 256, 0 };
+        Texture texture;
+
+        MyTank() {
+            if (!texture.loadFromFile("assets/images/entity/tank.png")) {}
+            setTexture(texture);
+            setOrigin(32, 32);
+        }
+    };
+
+    struct GrassFloor : Sprite {
+        Texture texture;
+        Sprite sprite;
+
+        GrassFloor() {
+            if (!texture.loadFromFile("assets/images/floor/grass.png")) {}
+            setTexture(texture);
+        }
     };
 
     MyTank myTank;
+    GrassFloor grassFloor;
 
-    GameWindow(MainWindow& mainWindow) : MainWindow(mainWindow.window, mainWindow.asset) {
-
-        asset.mySprite("GrassFloor", asset.myTexture("assets/images/floor/grass.png"));
-        asset.mySprite("MyTank", asset.myTexture("assets/images/entity/tank.png"));
-
-        asset.mySprite("GrassFloor").setOrigin(128, 128);
-        asset.mySprite("MyTank").setOrigin(32, 32);
-
-        RenderTexture renderTexture;
-        if (!renderTexture.create(1920, 1920)) {
-            cerr << "can't create renderTexture" << endl;
-        }
-    }
+    GameWindow(MainWindow& mainWindow) : MainWindow(mainWindow) {}
 
     int SceneLogic() override {
 
@@ -262,14 +152,14 @@ public:
 
         for (int i = 0; i < 960 + 256; i+=256) {
             for (int j = 0; j < 600 + 256; j+=256) {
-                asset.mySprite("GrassFloor").setPosition(i, j);
-                window.draw(asset.mySprite("GrassFloor"));
+                grassFloor.setPosition(i, j);
+                window.draw(grassFloor);
             }
         }
 
-        asset.mySprite("MyTank").setPosition(myTank.mySpriteCoor[0], myTank.mySpriteCoor[1]);
-        asset.mySprite("MyTank").setRotation(myTank.mySpriteCoor[2]);
-        window.draw(asset.mySprite("MyTank"));
+        myTank.setPosition(myTank.mySpriteCoor[0], myTank.mySpriteCoor[1]);
+        myTank.setRotation(myTank.mySpriteCoor[2]);
+        window.draw(myTank);
 
         return 0;
     }
@@ -286,12 +176,10 @@ int main() {
     filesystem::path currentPath = filesystem::current_path();
     cout << "Directory: " << currentPath << endl;
 
-    AssetManager asset;
-
     RenderWindow window(VideoMode(960, 600), "RoyalTy-Tank");
     window.setFramerateLimit(60);
 
-    MainWindow mainWindow(window, asset);
+    MainWindow mainWindow(window);
     SceneManager sceneManager;
 
     MenuWindow menu(mainWindow);
