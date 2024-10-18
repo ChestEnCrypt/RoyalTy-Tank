@@ -191,14 +191,16 @@ public:
                 if (event.type == Event::Closed) {
                     window.close();
                 }
+                else if (event.type == Event::Resized) {
+                    FloatRect visibleArea(0, 0, event.size.width, event.size.height);
+                    window.setView(View(visibleArea));
+                }
             }
             window.clear();
 
             if (SceneLogic()) {
                 break;
             }
-
-            this_thread::sleep_for(chrono::milliseconds(8));
 
             SceneDraw();
 
@@ -211,8 +213,7 @@ public:
 class MenuWindow : public MainWindow {
 public:
     MenuWindow(MainWindow& mainWindow) : MainWindow(mainWindow.window, mainWindow.asset) {
-        //asset.includeTexture("assets/images/entity/tank.png");
-        
+
         asset.mySprite("myTank", asset.myTexture("assets/images/entity/tank.png"));
         asset.mySprite("myTank").setOrigin(32, 32);
         asset.mySprite("myTank").setRotation(90);
@@ -220,7 +221,6 @@ public:
         asset.myText("1", asset.myFont("Consolas.ttf")).setString("PRESS SPACE TO CONTINUE");
         asset.myText("1").setCharacterSize(32);
         asset.myText("1").setPosition(300, 540);
-        
 
         cout << "The necessary assets are included" << endl;
     }
@@ -317,6 +317,8 @@ int main() {
     AssetManager asset;
 
     RenderWindow window(VideoMode(960, 600), "RoyalTy-Tank");
+    window.setFramerateLimit(60);
+
     MainWindow mainWindow(window, asset);
     SceneManager sceneManager;
 
