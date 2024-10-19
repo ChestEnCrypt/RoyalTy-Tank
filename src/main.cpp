@@ -1,16 +1,19 @@
-#include <SFML/Graphics.hpp>
-#include <filesystem>
+﻿#include <SFML/Graphics.hpp>
 #include <iostream>
-#include <fstream>
 #include <vector>
-#include <thread>
-#include <chrono>
 #include <math.h>
 
 using namespace std;
 using namespace sf;
 
-float PI = 3.14159f;
+const float PI = 3.14159f;
+
+float resolution[] = {
+    256.f,
+    512.f,
+    1024.f,
+    2048.f
+};
 
 class MainWindow{
 public:
@@ -18,14 +21,69 @@ public:
     RenderTexture renderTexture;
     Vector2u windowSize;
     VideoMode displayMode;
-    int a = 0;
+    float& res = resolution[1];
+    struct _size {
+        int x = 0;
+        int y = 0;
 
-    MainWindow(RenderWindow& window) : window(window) {
+        _size(int x = 0, int y = 0) : x(x), y(y) {}
+    };
 
+    struct Button : RenderTexture {
+        Texture texture;
+        _size pos;
+        _size size;
+        _size texSize;
+
+        Button(const string& path, _size pos, _size size) : pos(pos), size(size) {
+            if (!create(size.x, size.y)) {};
+            if (!texture.loadFromFile(path)) {}
+            texSize.x = texture.getSize().x / 3;
+            texSize.y = texture.getSize().y / 3;
+
+            Sprite peace;
+            peace.setTexture(texture);
+
+            for (int i = 0; i <= 1; i++) {
+                for (int j = 0; j <= 1; j++) {
+                    peace.setTextureRect(IntRect((texSize.x * 3 - texSize.x) * i, (texSize.y * 3 - texSize.y) * j, texSize.x, texSize.y));
+                    peace.setPosition((size.x - texSize.x) * i, (size.y - texSize.y) * j);
+                    draw(peace);
+                }
+            }
+
+            for (int i = 0; i <= 1; i++) {
+                peace.setTextureRect(IntRect(texSize.x, texSize.y * 2 * i, texSize.x, texSize.y));
+                for (int j = texSize.x; j < size.x - texSize.x; j += texSize.x) {
+                    peace.setPosition(j, (size.y - texSize.y) * i);
+                    draw(peace);
+                }
+            }
+            for (int i = 0; i <= 1; i++) {
+                peace.setTextureRect(IntRect(texSize.x * 2 * i, texSize.y, texSize.x, texSize.y));
+                for (int j = texSize.y; j < size.y - texSize.y; j += texSize.y) {
+                    peace.setPosition((size.x - texSize.x) * i, j);
+                    draw(peace);
+                }
+            }
+
+            for (int i = texSize.x; i < size.x - texSize.x; i += texSize.x) {
+                for (int j = texSize.y; j < size.y - texSize.y; j += texSize.y) {
+                    peace.setTextureRect(IntRect(texSize.x, texSize.y, texSize.x, texSize.y));
+                    peace.setPosition(i, j);
+                    draw(peace);
+                }
+            }
+            display();
+        }
+    };
+
+    MainWindow(RenderWindow& window) : window(window)
+    {
         windowSize = window.getSize();
         displayMode = VideoMode();
 
-        if (!renderTexture.create(1080, 1080)) {
+        if (!renderTexture.create(res, res)) {
             cerr << "Can't create renderTexture" << endl;
         }
     }
@@ -33,7 +91,13 @@ public:
     MainWindow(const MainWindow& mainWindow)
         : window(mainWindow.window),
         windowSize(mainWindow.windowSize),
-        displayMode(mainWindow.displayMode) {}
+        displayMode(mainWindow.displayMode),
+        res(mainWindow.res)
+    {
+        if (!renderTexture.create(res, res)) {
+            cerr << "Can't create renderTexture" << endl;
+        }
+    }
 
     virtual int SceneLogic() { return 0; }
     virtual int SceneDraw() { return 0; }
@@ -47,18 +111,24 @@ public:
                     window.close();
                 }
                 else if (event.type == Event::Resized) {
+                    windowSize = window.getSize();
+
+                    if (windowSize.x < windowSize.y) {
+                        windowSize.x = windowSize.y;
+                        window.setSize(windowSize);
+                    }
+
                     FloatRect visibleArea(0, 0, event.size.width, event.size.height);
                     window.setView(View(visibleArea));
                 }
             }
-            window.clear();
 
             if (SceneLogic()) {
                 break;
             }
 
+            window.clear();
             SceneDraw();
-
             window.display();
         }
     }
@@ -67,22 +137,27 @@ public:
 
 class MenuWindow : public MainWindow {
 public:
-    Text press;
     Font consolas;
+    Text press;
+    Button button;
+    Sprite buttonSprite;
 
-    MenuWindow(MainWindow& mainWindow) : MainWindow(mainWindow) {
+    MenuWindow(MainWindow& mainWindow)
+        : MainWindow(mainWindow),
+        button("assets/images/buttons/button8.png", _size(0, 0), _size(48, 24)),
+        buttonSprite(button.getTexture())
+    {
         if (!consolas.loadFromFile("assets/fonts/Consolas.ttf")) {}
         press.setFont(consolas);
         press.setString("PRESS SPACE TO CONTINUE");
-        press.setCharacterSize(32);
+        press.setCharacterSize(64);
         press.setStyle(1);
-        press.setPosition(300, 540);
+        press.setPosition(0, 500);
 
-        cout << "The necessary assets are included" << endl;
+        cout << "MenuWindow : The necessary assets are included" << endl;
     }
 
     int SceneLogic() override {
-        num++;
 
         if (Keyboard::isKeyPressed(Keyboard::Space)) {
             return 1;
@@ -93,7 +168,14 @@ public:
 
     int SceneDraw() override {
 
-        window.draw(press);
+        renderTexture.clear();
+        renderTexture.draw(buttonSprite);
+        renderTexture.display();
+
+        Sprite textureSprite(renderTexture.getTexture());
+        textureSprite.setScale(windowSize.x / res, windowSize.x / res);
+
+        window.draw(textureSprite);
 
         return 0;
     }
@@ -101,48 +183,38 @@ public:
 
 class GameWindow : public MainWindow {
 public:
-    struct MyTank : Sprite {
-        float mySpriteCoor[3] = { 256, 256, 0 };
-        Texture texture;
+    Texture grassFloorTex;
+    Texture tankTex;
 
-        MyTank() {
-            if (!texture.loadFromFile("assets/images/entity/tank.png")) {}
-            setTexture(texture);
-            setOrigin(32, 32);
-        }
-    };
+    Sprite tank;
+    int tankСoor[3] = {256, 256, 0};
+    Sprite grassFloor;
 
-    struct GrassFloor : Sprite {
-        Texture texture;
-        Sprite sprite;
+    GameWindow(MainWindow& mainWindow) : MainWindow(mainWindow) {
+        if (!grassFloorTex.loadFromFile("assets/images/floor/grass.png"));
+        grassFloor.setTexture(grassFloorTex);
 
-        GrassFloor() {
-            if (!texture.loadFromFile("assets/images/floor/grass.png")) {}
-            setTexture(texture);
-        }
-    };
-
-    MyTank myTank;
-    GrassFloor grassFloor;
-
-    GameWindow(MainWindow& mainWindow) : MainWindow(mainWindow) {}
+        if (!tankTex.loadFromFile("assets/images/entity/tank.png"));
+        tank.setTexture(tankTex);
+        tank.setOrigin(32, 32);
+    }
 
     int SceneLogic() override {
 
-        int rotate = static_cast<int>(myTank.mySpriteCoor[2]) % 360;
+        int rotate = static_cast<int>(tankСoor[2]) % 360;
         if (Keyboard::isKeyPressed(Keyboard::W)) {
-            myTank.mySpriteCoor[0] += 2.f * sin(rotate * PI / 180);
-            myTank.mySpriteCoor[1] -= 2.f * cos(rotate * PI / 180);
+            tankСoor[0] += 2.f * sin(rotate * PI / 180);
+            tankСoor[1] -= 2.f * cos(rotate * PI / 180);
         }
         if (Keyboard::isKeyPressed(Keyboard::S)) {
-            myTank.mySpriteCoor[0] -= 2.f * sin(rotate * PI / 180);
-            myTank.mySpriteCoor[1] += 2.f * cos(rotate * PI / 180);
+            tankСoor[0] -= 2.f * sin(rotate * PI / 180);
+            tankСoor[1] += 2.f * cos(rotate * PI / 180);
         }
         if (Keyboard::isKeyPressed(Keyboard::A)) {
-            myTank.mySpriteCoor[2] -= 1.5f;
+            tankСoor[2] -= 1.5f;
         }
         if (Keyboard::isKeyPressed(Keyboard::D)) {
-            myTank.mySpriteCoor[2] += 1.5f;
+            tankСoor[2] += 1.5f;
         }
 
         return 0;
@@ -150,16 +222,18 @@ public:
 
     int SceneDraw() override {
 
-        for (int i = 0; i < 960 + 256; i+=256) {
-            for (int j = 0; j < 600 + 256; j+=256) {
-                grassFloor.setPosition(i, j);
-                window.draw(grassFloor);
-            }
-        }
+        renderTexture.clear();
+        renderTexture.draw(grassFloor);
 
-        myTank.setPosition(myTank.mySpriteCoor[0], myTank.mySpriteCoor[1]);
-        myTank.setRotation(myTank.mySpriteCoor[2]);
-        window.draw(myTank);
+        tank.setPosition(32, res * windowSize.y / windowSize.x - 32);
+        renderTexture.draw(tank);
+
+        renderTexture.display();
+
+        Sprite textureSprite(renderTexture.getTexture());
+        textureSprite.setScale(windowSize.x / res, windowSize.x / res);
+
+        window.draw(textureSprite);
 
         return 0;
     }
@@ -173,14 +247,13 @@ public:
 };
 
 int main() {
-    filesystem::path currentPath = filesystem::current_path();
-    cout << "Directory: " << currentPath << endl;
-
     RenderWindow window(VideoMode(960, 600), "RoyalTy-Tank");
     window.setFramerateLimit(60);
 
-    MainWindow mainWindow(window);
     SceneManager sceneManager;
+
+    MainWindow mainWindow(window);
+    //sceneManager.RunScene(mainWindow);
 
     MenuWindow menu(mainWindow);
     sceneManager.RunScene(menu);
