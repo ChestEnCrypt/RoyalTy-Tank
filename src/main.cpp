@@ -140,10 +140,14 @@ public:
 
             window.clear();
             SceneDraw();
+
+            Sprite textureSprite(renderTexture.getTexture());
+            textureSprite.setScale(windowSize.x / res, windowSize.x / res);
+
+            window.draw(textureSprite);
             window.display();
         }
     }
-    int num = 0;
 };
 
 class MenuWindow : public MainWindow {
@@ -183,10 +187,7 @@ public:
         renderTexture.draw(buttonSprite);
         renderTexture.display();
 
-        Sprite textureSprite(renderTexture.getTexture());
-        textureSprite.setScale(windowSize.x / res, windowSize.x / res);
-
-        window.draw(textureSprite);
+        
 
         return 0;
     }
