@@ -31,15 +31,21 @@ public:
 
     struct Button : RenderTexture {
         Texture texture;
-        _size pos;
-        _size size;
-        _size texSize;
+        _size pos, size, texSize;
 
-        Button(const string& path, _size pos, _size size) : pos(pos), size(size) {
+        Button(const string& path, _size pos, _size __size) : pos(pos), size(__size) {
             if (!create(size.x, size.y)) {};
             if (!texture.loadFromFile(path)) {}
             texSize.x = texture.getSize().x / 3;
             texSize.y = texture.getSize().y / 3;
+
+            setButtonSize(__size);
+        }
+
+        void setButtonSize(_size __size) {
+            size = __size;
+
+            clear();
 
             Sprite peace;
             peace.setTexture(texture);
@@ -75,6 +81,10 @@ public:
                 }
             }
             display();
+        }
+
+        void setButtonPos(_size __pos) {
+            pos = __pos;
         }
     };
 
