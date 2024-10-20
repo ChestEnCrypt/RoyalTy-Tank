@@ -244,6 +244,26 @@ if (!renderTexture.create(res, res)) {
 Создается подокно с размера `res`x`res`. Для более адаптивности, как сказано ранее. И он имеет блок для сообщение об ошибке, ему выделено отдельное внимание потому что, это важный часть всего кода.
 
 ```cpp
+MainWindow(const MainWindow& mainWindow)
+```
+Создается още один конструктор для копирования уже созданного `MainWindow` объекта.
+
+```cpp
+: window(mainWindow.window),
+windowSize(mainWindow.windowSize),
+displayMode(mainWindow.displayMode),
+res(mainWindow.res)
+```
+каждая переменная копирует в сабя самого от переданного на конструктор `const MainWindow& mainWindow`.
+
+```cpp
+if (!renderTexture.create(res, res)) {
+    cerr << "Can't create renderTexture" << endl;
+}
+```
+`renderTexture` Создается еще раз потому что прошлый кадр нам уже не нужен в новой сцене, и не получится скопировать, поскольку конфеденциальность тоже важна.
+
+```cpp
 virtual int SceneLogic() { return 0; }
 virtual int SceneDraw() { return 0; }
 ```

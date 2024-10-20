@@ -194,6 +194,9 @@ RoyalTy-Tank_IS_TOP_LEVEL:STATIC=ON
 //Value Computed by CMake
 RoyalTy-Tank_SOURCE_DIR:STATIC=D:/Projects/RoyalTy-Tank
 
+//The directory containing a CMake configuration file for SFML.
+SFML_DIR:PATH=SFML_DIR-NOTFOUND
+
 //Path to a file.
 SFML_DOC_DIR:PATH=SFML_DOC_DIR-NOTFOUND
 
