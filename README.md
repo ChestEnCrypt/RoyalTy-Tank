@@ -69,50 +69,149 @@ struct _size {
 ```
 Создана структура `_size` для хранение двух типов данный, например, размер, позиция, и т.п. Данные присваивается через коструктор ```_size(int x = 0, int y = 0) : x(x), y(y) {}```.
 
-[строка 32](https://github.com/ChestEnCrypt/RoyalTy-Tank/blob/c07d073d41c3364bd9954252b01e52de4765cf1a/src/main.cpp#L32). Создана структура `Button` унаследующего от `RenderTexture` для создание и корректного отображение его тектуры.
+```cpp
+struct Button : RenderTexture { ... }
+```
+ Создана структура `Button` унаследующего от `RenderTexture` для создание и корректного отображение его тектуры.
 
-[строка 33](https://github.com/ChestEnCrypt/RoyalTy-Tank/blob/c07d073d41c3364bd9954252b01e52de4765cf1a/src/main.cpp#L33). Создается текструра `Texture texture` для хранение шаблона текстуры кнопки.
+```cpp
+Texture texture;
+```
+Создается текструра `Texture texture` для хранение шаблона текстуры кнопки.
 
-[строка 34](https://github.com/ChestEnCrypt/RoyalTy-Tank/blob/c07d073d41c3364bd9954252b01e52de4765cf1a/src/main.cpp#L34). Создаются `_size pos, size, texSize` для хранение позиции, размера, и размер частей шаблона текстуры кнопки, для упрощение будущий математики.
+```cpp
+_size pos, size, texSize;
+```
+Создаются `_size pos, size, texSize` для хранение позиции, размера, и размер частей шаблона текстуры кнопки, для упрощение будущий математики.
 
-[строка 36](https://github.com/ChestEnCrypt/RoyalTy-Tank/blob/c07d073d41c3364bd9954252b01e52de4765cf1a/src/main.cpp#L36). Создается конструктор структуры `Button(const string& path, _size pos, _size __size)` для присвоение нужных данных в переменные как `pos(pos), size(__size)`.
+```cpp
+Button(const string& path, _size pos, _size __size) : pos(pos), size(__size) { ... }
+```
+Создается конструктор структуры `Button(const string& path, _size pos, _size __size)`.
 
-[строка 37](https://github.com/ChestEnCrypt/RoyalTy-Tank/blob/c07d073d41c3364bd9954252b01e52de4765cf1a/src/main.cpp#L37). Создается `RenderTexture.create()` и с помощью оператора `if` можем определить произошла ли ошибка в этом пути создании `if (!create(size.x, size.y))`. Можно было и поместить код который должен был выполнится при ошибочной создани `RenderTexture`, я этого добовлять не стал, поскольку `SFML` сама оповещает об ошибке.
+```cpp
+if (!create(size.x, size.y)) {};
+```
+Создается `RenderTexture.create()` и с помощью оператора `if` можем определить произошла ли ошибка в этом пути создании `if (!create(size.x, size.y))`. Можно было и поместить код который должен был выполнится при ошибочной создани `RenderTexture`, я этого добовлять не стал, поскольку `SFML` сама оповещает об ошибке.
 
-[строка 38](https://github.com/ChestEnCrypt/RoyalTy-Tank/blob/c07d073d41c3364bd9954252b01e52de4765cf1a/src/main.cpp#L38). Импортируется картинка `loadFromFile(path)` и присваивается к переменной `texture` с директории `path`. Альтернативно прошлому он может оповещать об ошибке, я добовлять не стал, и я сказал почему.
+```cpp
+if (!texture.loadFromFile(path)) {}
+```
+ Импортируется картинка `loadFromFile(path)` и присваивается к переменной `texture` с директории `path`. Альтернативно прошлому он может оповещать об ошибке, я добовлять не стал, и я сказал почему.
 
-[строка 39-40](https://github.com/ChestEnCrypt/RoyalTy-Tank/blob/c07d073d41c3364bd9954252b01e52de4765cf1a/src/main.cpp#L39-L40). присваивается переменной `texSize.x` и `texSize.y` размеры текстуры `texture`, с помощью метода `getSize().x` и `getSize().y`, и делится они на `3` потому что, картина которую мы присваиваем к `texture`, делится на `9` ровные части
+```cpp
+texSize.x = texture.getSize().x / 3;
+texSize.y = texture.getSize().y / 3;
+```
+Присваивается переменной `texSize.x` и `texSize.y` размеры текстуры `texture`, с помощью метода `getSize().x` и `getSize().y`, и делится они на `3` потому что, картина которую мы присваиваем к `texture`, делится на `9` ровные части
 
-[строка 45](https://github.com/ChestEnCrypt/RoyalTy-Tank/blob/c07d073d41c3364bd9954252b01e52de4765cf1a/src/main.cpp#L45). В методе `setButtonSize` задается и размер кнопки а так же создается или пересоздается текстура кнопки. Не могу полностью описать код но концепцию могу рассказать.
+```cpp
+setButtonSize(__size);
+```
+Вызывается метод для создание или пересоздание текстуры кнопки.
 
-[строки 48-83](https://github.com/ChestEnCrypt/RoyalTy-Tank/blob/c07d073d41c3364bd9954252b01e52de4765cf1a/src/main.cpp#L48-L83). Концепция кода
+```cpp
+void setButtonSize(_size __size) { ... }
+```
+В методе `setButtonSize` задается и размер кнопки а так же создается или пересоздается текстура кнопки. Не могу полностью описать код но концепцию могу рассказать.
 
-Текстура кнопки
+```cpp
+size = __size;
+```
+Присваивается размер кнопки.
+
+```cpp
+clear();
+```
+Очишает текстуру кнопки.
+
+```cpp
+Sprite peace;
+peace.setTexture(texture);
+```
+Создается спрайт `peace` для вывода частей картинки кнопки в `renderTexture`, и задает текстуру на него.
+
+Концепция последуещего кода
+
+Текстура кнопки `peace` (изначально).
 `1|2|3`
 `4|5|6`
 `7|8|9`
 
-И это должно превратится в это
+И это должно превратится в это (результат).
 `1|2|2|3`
 `4|5|5|6`
 `4|5|5|6`
 `7|8|8|9`
 
+
+```cpp
+for (int i = 0; i <= 1; i++) {
+    for (int j = 0; j <= 1; j++) {
+        peace.setTextureRect(IntRect((texSize.x * 3 - texSize.x) * i, (texSize.y * 3 - texSize.y) * j, texSize.x, texSize.y));
+        peace.setPosition((size.x - texSize.x) * i, (size.y - texSize.y) * j);
+        draw(peace);
+    }
+}
+```
 Углы `1`, `3`, `7`, `9`, вставляются только 1 за жадый угол соответствующем образом
 `1|...|3`
 `.|...|.`
 `.|...|.`
 `7|...|9`
 
+
+```cpp
+for (int i = 0; i <= 1; i++) {
+    peace.setTextureRect(IntRect(texSize.x, texSize.y * 2 * i, texSize.x, texSize.y));
+    for (int j = texSize.x; j < size.x - texSize.x; j += texSize.x) {
+        peace.setPosition(j, (size.y - texSize.y) * i);
+        draw(peace);
+    }
+}
+for (int i = 0; i <= 1; i++) {
+    peace.setTextureRect(IntRect(texSize.x * 2 * i, texSize.y, texSize.x, texSize.y));
+    for (int j = texSize.y; j < size.y - texSize.y; j += texSize.y) {
+        peace.setPosition((size.x - texSize.x) * i, j);
+        draw(peace);
+    }
+}
+```
 И есть грани `2`, `4`, `6`, `8` которые должны копироватся столько раз, сколько в высоту и столько в ширину.
 `.|2|2|.`
 `4|...|6`
 `4|...|6`
-`.|8|9|.`
+`.|8|8|.`
+Этот код состаит двух частей, сначало рисует горизонтальные части кнопки (`2`, `8`), и вторая часть кода выводит вертикальные части кнопки (`4`, `6`).
 
-И в конце центр `5` должен заполнить всю оставшиюся пространства.
+
+```cpp
+for (int i = texSize.x; i < size.x - texSize.x; i += texSize.x) {
+    for (int j = texSize.y; j < size.y - texSize.y; j += texSize.y) {
+        peace.setTextureRect(IntRect(texSize.x, texSize.y, texSize.x, texSize.y));
+        peace.setPosition(i, j);
+        draw(peace);
+    }
+}
+```
+И центр `5` должен заполнить всю оставшиюся пространства.
 `.|...|.`
 `.|5|5|.`
 `.|5|5|.`
 `.|...|.`
 
+```cpp
+display();
+```
+И в конце все это отрисовывается этим методом.
+
+```cpp
+void setButtonPos(_size __pos) {
+    pos = __pos;
+}
+```
+Создан метод для указываение позиции кнопки.
+На этом структура закрывается.
+```
+};
+```
