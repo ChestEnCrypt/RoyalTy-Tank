@@ -33,12 +33,13 @@ public:
         Texture texture;
         _size pos, size, texSize;
 
-        Button(const string& path, _size pos, _size __size) {
+        Button(const string& path, _size __pos, _size __size) {
             if (!create(size.x, size.y)) {};
             if (!texture.loadFromFile(path)) {}
             texSize.x = texture.getSize().x / 3;
             texSize.y = texture.getSize().y / 3;
 
+            setButtonPos(__pos);
             setButtonSize(__size);
         }
 
