@@ -1,11 +1,16 @@
 ﻿#include <SFML/Graphics.hpp>
+#include <nlohmann/json.hpp>
 #include <iostream>
+#include <fstream>
+#include <string>
 #include <vector>
 #include <math.h>
+#include "MainWindow.hpp"
 #include "Button.hpp"
 
 using namespace std;
 using namespace sf;
+using json = nlohmann::json;
 
 const float PI = 3.14159f;
 
@@ -14,76 +19,6 @@ float resolution[] = {
 	512.f,
 	1024.f,
 	2048.f
-};
-float& res = resolution[1];
-
-class MainWindow{
-public:
-	RenderWindow& window;
-	RenderTexture& renderTexture;
-	Vector2u windowSize;
-	VideoMode displayMode;
-
-	MainWindow(RenderWindow& window, RenderTexture& _renderTexture)
-		: window(window),
-		renderTexture(_renderTexture)
-	{
-		cout << 10 << endl;
-		windowSize = window.getSize();
-		displayMode = VideoMode();
-
-		if (!renderTexture.create(res, res)) {
-			cerr << "Failed to create renderTexture" << endl;
-		}
-	}
-
-	MainWindow(const MainWindow& mainWindow)
-		: window(mainWindow.window),
-		windowSize(mainWindow.windowSize),
-		displayMode(mainWindow.displayMode),
-		renderTexture(mainWindow.renderTexture)
-	{
-		cout << 11 << endl;
-	}
-
-	virtual int SceneLogic() { return 1; }
-	virtual int SceneDraw() { return 0; }
-
-	void SceneRun() {
-		cout << "SceneRun" << endl;
-		while (window.isOpen()) {
-			Event event;
-			while (window.pollEvent(event)) {
-				if (event.type == Event::Closed) {
-					window.close();
-				}
-				else if (event.type == Event::Resized) {
-					windowSize = window.getSize();
-
-					if (windowSize.x < windowSize.y) {
-						windowSize.x = windowSize.y;
-						window.setSize(windowSize);
-					}
-
-					FloatRect visibleArea(0, 0, event.size.width, event.size.height);
-					window.setView(View(visibleArea));
-				}
-			}
-
-			if (SceneLogic()) {
-				break;
-			}
-
-			window.clear();
-			SceneDraw();
-
-			Sprite textureSprite(renderTexture.getTexture());
-			textureSprite.setScale(windowSize.x / res, windowSize.x / res);
-
-			window.draw(textureSprite);
-			window.display();
-		}
-	}
 };
 
 class MenuWindow : public MainWindow {
@@ -193,13 +128,27 @@ public:
 };
 
 int main() {
+	ifstream configFile("config/config.json");
+	json config;
+
+	if (!configFile.is_open()) {
+		cerr << "can't open file!" << endl;
+		return 1;
+	}
+
+	configFile >> config;
+
+	string hello = config["hello"];
+
+	float& res = resolution[2];
+
 	RenderWindow window(VideoMode(960, 600), "RoyalTy-Tank");
 	window.setFramerateLimit(60);
 
 	SceneManager sceneManager;
 
 	RenderTexture renderTexture;
-	MainWindow mainWindow(window, renderTexture);
+	MainWindow mainWindow(window, renderTexture, res);
 
 	MenuWindow menu(mainWindow);
 	sceneManager.RunScene(menu);

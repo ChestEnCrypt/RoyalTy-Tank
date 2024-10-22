@@ -10,13 +10,11 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE})
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE})
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE})
 
-# Set intermediate directory (optional)
-set(CMAKE_INTERMEDIATE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}/Intermediate)
-
 # Add the source files
 set(SOURCES
 	src/main.cpp
 	src/Button.cpp
+	src/MainWindow.cpp
 )
 add_executable("RoyalTy-Tank" ${SOURCES})
 
@@ -35,6 +33,11 @@ target_link_libraries("RoyalTy-Tank" sfml-system sfml-window sfml-graphics sfml-
 # Add include directories for SFML
 target_include_directories("RoyalTy-Tank" PRIVATE "${CMAKE_SOURCE_DIR}/include/SFML")
 
+# Добавьте директорию nlohmann/json
+target_include_directories("RoyalTy-Tank" PRIVATE "${CMAKE_SOURCE_DIR}/include")
+
+# Link other libraries if necessary
+
 # Add include my personal directories
 include_directories(${CMAKE_SOURCE_DIR}/include)
 
@@ -47,3 +50,8 @@ add_custom_command(TARGET "RoyalTy-Tank" POST_BUILD
 add_custom_command(TARGET "RoyalTy-Tank" POST_BUILD
 	COMMAND ${CMAKE_COMMAND} -E copy_directory
 	${CMAKE_SOURCE_DIR}/assets $<TARGET_FILE_DIR:RoyalTy-Tank>/assets)
+
+# Copy the config folder to the executable's working directory
+add_custom_command(TARGET "RoyalTy-Tank" POST_BUILD
+	COMMAND ${CMAKE_COMMAND} -E copy_directory
+	${CMAKE_SOURCE_DIR}/config $<TARGET_FILE_DIR:RoyalTy-Tank>/config)
