@@ -7,6 +7,7 @@
 #include <math.h>
 #include "MainWindow.hpp"
 #include "Button.hpp"
+#include "Place.hpp"
 
 using namespace std;
 using namespace sf;
@@ -30,7 +31,7 @@ public:
 
 	MenuWindow(MainWindow& mainWindow)
 		: MainWindow(mainWindow),
-		button("assets/images/buttons/button8.png", _size(0, 0), _size(48, 24)), // не знаю почему но это строка приводит к ошибке
+		button("assets/images/buttons/button8.png", _size(0, 0), _size(48, 24)),
 		buttonSprite(button.getTexture())
 	{
 		if (!consolas.loadFromFile("assets/fonts/Consolas.ttf")) {}
@@ -68,7 +69,7 @@ public:
 	Texture tankTex;
 
 	Sprite tank;
-	int tankСoor[3] = {256, 256, 0};
+	float tankСoor[3] = {256, 256, 90};
 	Sprite grassFloor;
 
 	GameWindow(MainWindow& mainWindow) : MainWindow(mainWindow) {
@@ -78,6 +79,9 @@ public:
 		if (!tankTex.loadFromFile("assets/images/entity/tank.png"));
 		tank.setTexture(tankTex);
 		tank.setOrigin(32, 32);
+
+		cout << windowSize.x << endl;
+		cout << windowSize.y << endl;
 	}
 
 	int SceneLogic() override {
@@ -104,10 +108,15 @@ public:
 	int SceneDraw() override {
 
 		renderTexture.clear();
-		renderTexture.draw(grassFloor);
 
-		tank.setPosition(32, res * windowSize.y / windowSize.x - 32);
-		renderTexture.draw(tank);
+		//.setPosition(32, res * windowSize.y / windowSize.x - 32);
+		tank.setPosition(tankСoor[0], tankСoor[1]);
+		tank.setRotation(tankСoor[2]);
+		place.update();
+		place.draw(tank);
+		place.display();
+
+		renderTexture.draw(place.getPlace(tankСoor[0] - res / 2, tankСoor[1] - res / 2, res, res));
 
 		renderTexture.display();
 
@@ -128,19 +137,21 @@ public:
 };
 
 int main() {
-	ifstream configFile("config/config.json");
-	json config;
+	//ifstream configFile("config/config.json");
+	//json config;
 
-	if (!configFile.is_open()) {
-		cerr << "can't open file!" << endl;
-		return 1;
-	}
+	//if (!configFile.is_open()) {
+	//	cerr << "can't open file!" << endl;
+	//	return 1;
+	//}
 
-	configFile >> config;
+	//configFile >> config;
 
-	string hello = config["hello"];
+	//string hello = config["hello"];
 
-	float& res = resolution[2];
+	Place place("place1");
+
+	float& res = resolution[1];
 
 	RenderWindow window(VideoMode(960, 600), "RoyalTy-Tank");
 	window.setFramerateLimit(60);
@@ -148,7 +159,7 @@ int main() {
 	SceneManager sceneManager;
 
 	RenderTexture renderTexture;
-	MainWindow mainWindow(window, renderTexture, res);
+	MainWindow mainWindow(window, renderTexture, place, res);
 
 	MenuWindow menu(mainWindow);
 	sceneManager.RunScene(menu);

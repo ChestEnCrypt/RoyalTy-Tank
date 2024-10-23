@@ -1,24 +1,23 @@
 #include "MainWindow.hpp"
 
-MainWindow::MainWindow(RenderWindow& _window, RenderTexture& _renderTexture, float& res)
+MainWindow::MainWindow(RenderWindow& _window, RenderTexture& _renderTexture, Place& place, float& res)
 	: window(_window),
 	renderTexture(_renderTexture),
+	place(place),
 	res(res)
 {
-	//cout << 10 << endl;
 	windowSize = window.getSize();
 	displayMode = VideoMode();
 
-	if (!renderTexture.create(res, res)) {
-		//cerr << "Failed to create renderTexture" << endl;
-	}
+	if (!renderTexture.create(res, res)) {}
 }
 
 MainWindow::MainWindow(const MainWindow& mainWindow)
 	: window(mainWindow.window),
-	windowSize(mainWindow.windowSize),
+	windowSize(window.getSize()),
 	displayMode(mainWindow.displayMode),
 	renderTexture(mainWindow.renderTexture),
+	place(mainWindow.place),
 	res(mainWindow.res)
 {}
 
@@ -26,7 +25,6 @@ int MainWindow::SceneLogic() { return 1; }
 int MainWindow::SceneDraw() { return 0; }
 
 void MainWindow::SceneRun() {
-	//cout << "SceneRun" << endl;
 	while (window.isOpen()) {
 		Event event;
 		while (window.pollEvent(event)) {
@@ -55,6 +53,7 @@ void MainWindow::SceneRun() {
 
 		Sprite textureSprite(renderTexture.getTexture());
 		textureSprite.setScale(windowSize.x / res, windowSize.x / res);
+		textureSprite.setTextureRect(IntRect(0, (res - windowSize.y / (windowSize.x / res)) / 2, res, windowSize.y / (windowSize.x / res)));
 
 		window.draw(textureSprite);
 		window.display();

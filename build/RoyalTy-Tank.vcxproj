@@ -459,6 +459,7 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClCompile Include="D:\Projects\RoyalTy-Tank\src\main.cpp" />
     <ClCompile Include="D:\Projects\RoyalTy-Tank\src\Button.cpp" />
     <ClCompile Include="D:\Projects\RoyalTy-Tank\src\MainWindow.cpp" />
+    <ClCompile Include="D:\Projects\RoyalTy-Tank\src\Place.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="D:\Projects\RoyalTy-Tank\build\ZERO_CHECK.vcxproj">

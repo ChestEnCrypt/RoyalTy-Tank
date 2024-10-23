@@ -15,6 +15,7 @@ set(SOURCES
 	src/main.cpp
 	src/Button.cpp
 	src/MainWindow.cpp
+	src/Place.cpp
 )
 add_executable("RoyalTy-Tank" ${SOURCES})
 

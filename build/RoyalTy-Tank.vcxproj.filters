@@ -10,6 +10,9 @@
     <ClCompile Include="D:\Projects\RoyalTy-Tank\src\MainWindow.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="D:\Projects\RoyalTy-Tank\src\Place.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="D:\Projects\RoyalTy-Tank\CMakeLists.txt" />
