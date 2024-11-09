@@ -1,328 +1,278 @@
-#include <SFML/Graphics.hpp>
-#include <filesystem>
+﻿#include <SFML/Graphics.hpp>
+#include <nlohmann/json.hpp>
 #include <iostream>
 #include <fstream>
+#include <string>
 #include <vector>
-#include <thread>
-#include <chrono>
 #include <math.h>
+#include "MainWindow.hpp"
+#include "Button.hpp"
+#include "Place.hpp"
 
 using namespace std;
 using namespace sf;
+using json = nlohmann::json;
 
-float PI = 3.14159f;
+const float PI = 3.14159f;
 
-struct TextureHeap {
-    string path = "assets/images/notFound.png";
-    Texture texture;
-
-    TextureHeap(const string& newPath) {
-        if (!texture.loadFromFile(newPath)) {
-            cerr << "Failed to load texture from " << newPath << endl;
-            if (!texture.loadFromFile(path)) {
-                cerr << "Failed to load texture from " << path << endl;
-            }
-            else {
-                cerr << "Loaded texture from " << path << endl;
-            }
-        }
-        else {
-            path = newPath;
-        }
-    }
+float resolution[] = {
+	256.f,
+	512.f,
+	1024.f,
+	2048.f
 };
 
-struct SpriteHeap {
-    string Id;
-    Sprite sprite;
-
-    SpriteHeap(const string& Id, const Texture& texture) : Id(Id) {
-        sprite.setTexture(texture);
-    }
-};
-
-struct FontHeap {
-    // "D:\Projects\RoyalTy-Tank\build\Debug\assets\fonts\Consolas.ttf"
-    string path = "Consolas.ttf";
-    Font font;
-
-    FontHeap(const string& newPath) {
-        if (!font.loadFromFile("assets/fonts/" + newPath)) {
-            cerr << "Failed to load font from " << newPath << endl;
-            if (!font.loadFromFile("assets/fonts/" + path)) {
-                cerr << "Failed to load font from " << newPath << endl;
-            }
-            cerr << "Loaded texture from " << path << endl;
-        }
-        else {
-            path = newPath;
-        }
-    }
-};
-
-struct TextHeap {
-    string Id;
-    string message;
-    Font font;
-    int size = 24;
-    Color color = Color::White;
-
-    Text text;
-
-    TextHeap(const string& Id, const Font& font, const string& message = "Default Text") : Id(Id), font(font), message(message) {
-        text.setFont(font);
-        text.setCharacterSize(size);
-        text.setFillColor(color);
-        text.setString(message);
-    }
-};
-
-class AssetManager {
-public:
-                                                                            // FIND
-    Texture& findTexture(const string& path) {
-
-        for (TextureHeap& texHeap : textures) {
-            if (texHeap.path == path) {
-                return texHeap.texture; // if texture is found
-            }
-        }
-
-        // if texture is not found
-        return includeTexture(path);
-    }
-
-    Sprite& findSprite(const string& Id, Texture& texture = Texture()) {
-
-        for (SpriteHeap& sprHeap : sprites) {
-            if (sprHeap.Id == Id) {
-                return sprHeap.sprite; // if sprite is found
-            }
-        }
-
-        // if sprite is not found
-        return includeSprite(Id, textures[0].texture);
-    }
-
-    Font& findFont(const string& path) {
-
-        for (FontHeap& fntHeap : fonts) {
-            if (fntHeap.path == path) {
-                return fntHeap.font;
-            }
-        }
-
-        return includeFont(path);
-    }
-
-    Text& findText(const string Id) {
-
-        for (TextHeap& txtHeap : texts) {
-            if (txtHeap.Id == Id) {
-                return txtHeap.text;
-            }
-        }
-
-        return includeText(Id, findFont("Consolas.ttf"));
-    }
-
-                                                                            // INCLUDE
-
-    Texture& includeTexture(const string& path) {
-        textures.push_back(TextureHeap(path));
-
-        // texture from path created
-        return textures.back().texture;
-    }
-
-    Sprite& includeSprite(const string& Id, const Texture& texture) {
-        sprites.push_back(SpriteHeap(Id, texture));
-
-        // sprite from Id & texture created
-        return sprites.back().sprite;
-    }
-
-    Font& includeFont(const string& path) {
-        fonts.push_back(FontHeap(path));
-
-        return fonts.back().font;
-    }
-
-    Text& includeText(const string& Id, const Font& font) {
-        texts.push_back(TextHeap(Id, font));
-
-        return texts.back().text;
-    }
-
+class angle {
 private:
-    vector<TextureHeap> textures;
+	float value = 0;
 
-    vector<SpriteHeap> sprites;
+	float onAccess() {
 
-    vector<FontHeap> fonts;
+		while (value < -181) {
+			value += 360;
+		}
+		while (value > 180) {
+			value -= 360;
+		}
 
-    vector<TextHeap> texts;
-};
+		return value;
+	}
 
-class MainWindow{
 public:
-    MainWindow(RenderWindow& window, AssetManager& asset) : window(window), asset(asset) {
-        asset.findFont("Consolas.ttf");
-    }
+	angle(float v = 0.f) : value(v) {}
 
-    virtual int SceneLogic() { return 0; }
-    virtual int SceneDraw() { return 0; }
+	operator float() {
+		return onAccess();
+	}
 
-    void SceneRun() {
-        cout << "SceneRun" << endl;
-        while (window.isOpen()) {
-            Event event;
-            while (window.pollEvent(event)) {
-                if (event.type == Event::Closed) {
-                    window.close();
-                }
-            }
-            window.clear();
-
-            if (SceneLogic()) {
-                break;
-            }
-
-            this_thread::sleep_for(chrono::milliseconds(8));
-
-            SceneDraw();
-
-            window.display();
-        }
-    }
-    int num = 0;
-private:
-    AssetManager& asset;
-protected:
-    RenderWindow& window;
+	angle& operator+=(float rhs) {
+		value += rhs;
+		return *this;
+	}
+	angle& operator-=(float rhs) {
+		value -= rhs;
+		return *this;
+	}
+	angle& operator*=(float rhs) {
+		value *= rhs;
+		return *this;
+	}
+	angle& operator/=(float rhs) {
+		value /= rhs;
+		return *this;
+	}
 };
 
 class MenuWindow : public MainWindow {
 public:
-    MenuWindow(RenderWindow& window, AssetManager& asset) : MainWindow(window, asset), asset(asset) {
-        //asset.includeTexture("assets/images/entity/tank.png");
-        asset.includeSprite("myTank", asset.findTexture("assets/images/entity/tank.png"));
-        asset.findSprite("myTank").setOrigin(32, 32);
-        asset.findSprite("myTank").setRotation(90);
+	Font consolas;
+	Text press;
 
-        asset.includeText("1", asset.findFont("Consolas.ttf")).setString("PRESS SPACE TO CONTINUE");
-        asset.findText("1").setCharacterSize(32);
-        asset.findText("1").setPosition(300, 540);
+	MenuWindow(MainWindow& mainWindow)
+		: MainWindow(mainWindow)
+	{
+		if (!consolas.loadFromFile("assets/fonts/Consolas.ttf")) {}
+		press.setFont(consolas);
+		press.setString("PRESS SPACE TO CONTINUE");
+		press.setCharacterSize(16);
+		press.setStyle(1);
+		press.setPosition(145, res / 2);
 
-        cout << "The necessary assets are included" << endl;
-    }
+		cout << "MenuWindow : The necessary assets are included" << endl;
+	}
 
-    int SceneLogic() override {
-        num++;
+	int SceneLogic() override {
 
-        if (Keyboard::isKeyPressed(Keyboard::Space)) {
-            return 1;
-        }
+		if (Keyboard::isKeyPressed(Keyboard::Space)) {
+			return 1;
+		}
 
-        return 0;
-    }
+		return 0;
+	}
 
-    int SceneDraw() override {
+	int SceneDraw() override {
 
-        window.draw(asset.findText("1"));
+		renderTexture.clear();
+		renderTexture.draw(press);
+		renderTexture.display();
 
-        return 0;
-    }
-private:
-    AssetManager& asset;
+		return 0;
+	}
 };
 
 class GameWindow : public MainWindow {
 public:
-    struct MyTank {
-        float mySpriteCoor[3] = { 256, 256, 0 };
-    };
+	Button button;
+	Sprite buttonSprite;
 
-    MyTank myTank;
+	Sprite tankBody;
+	Sprite tankTurret;
 
-    GameWindow(RenderWindow& window, AssetManager& asset)
-        : MainWindow(window, asset), asset(asset) {//myTank(asset.includeSprite("MyTank", asset.findTexture("assets/images/entity/tank.png")))
+	Texture tankBodyTex;
+	Texture tankTurretTex;
 
-        asset.includeSprite("MoneyBlock", asset.findTexture("assets/images/blocks/moneyBlock.png"));
-        asset.includeSprite("GrassFloor", asset.findTexture("assets/images/floor/grass.png"));
-        asset.findSprite("MyTank", asset.findTexture("assets/images/entity/tank.png"));
+	float tankCoor[3] = {512.f, 512.f, 0.f};
+	angle tankTurretAngle = 0.f;
+	angle cameraManAngle = 0.f;
 
-        asset.findSprite("GrassFloor").setOrigin(128, 128);
-        asset.findSprite("MyTank").setOrigin(32, 32);
+	Vector2i mousePos = Mouse::getPosition();
+	
+	GameWindow(MainWindow& mainWindow)
+		: MainWindow(mainWindow),
+		button("assets/images/buttons/button2.png", _size(0, 0), _size(48, 24)),
+		buttonSprite(button.getTexture())
+	{
+		if (!tankBodyTex.loadFromFile("assets/images/entity/tankBody.png"));
+		tankBody.setTexture(tankBodyTex);
+		tankBody.setOrigin(32, 32);
 
-        RenderTexture renderTexture;
-        if (!renderTexture.create(1920, 1920)) {
-            cerr << "can't create renderTexture" << endl;
-        }
-    }
+		if (!tankTurretTex.loadFromFile("assets/images/entity/tankTurret.png"));
+		tankTurret.setTexture(tankTurretTex);
+		tankTurret.setOrigin(20, 20);
+	}
 
-    int SceneLogic() override {
+	int SceneLogic() override {
 
-        int rotate = static_cast<int>(myTank.mySpriteCoor[2]) % 360;
-        if (Keyboard::isKeyPressed(Keyboard::W)) {
-            myTank.mySpriteCoor[0] += 2.f * sin(rotate * PI / 180);
-            myTank.mySpriteCoor[1] -= 2.f * cos(rotate * PI / 180);
-        }
-        if (Keyboard::isKeyPressed(Keyboard::S)) {
-            myTank.mySpriteCoor[0] -= 2.f * sin(rotate * PI / 180);
-            myTank.mySpriteCoor[1] += 2.f * cos(rotate * PI / 180);
-        }
-        if (Keyboard::isKeyPressed(Keyboard::A)) {
-            myTank.mySpriteCoor[2] -= 1.5f;
-        }
-        if (Keyboard::isKeyPressed(Keyboard::D)) {
-            myTank.mySpriteCoor[2] += 1.5f;
-        }
+		int rotate = static_cast<int>(tankCoor[2]) % 360;
+		if (Keyboard::isKeyPressed(Keyboard::W)) {
+			tankCoor[0] += 2.f * sin(rotate * PI / 180.f);
+			tankCoor[1] -= 2.f * cos(rotate * PI / 180.f);
+		}
+		if (Keyboard::isKeyPressed(Keyboard::S)) {
+			tankCoor[0] -= 2.f * sin(rotate * PI / 180.f);
+			tankCoor[1] += 2.f * cos(rotate * PI / 180.f);
+		}
+		if (Keyboard::isKeyPressed(Keyboard::A)) {
+			tankCoor[2] -= 1.5f;
+			tankTurretAngle -= 1.5f;
+		}
+		if (Keyboard::isKeyPressed(Keyboard::D)) {
+			tankCoor[2] += 1.5f;
+			tankTurretAngle += 1.5f;
+		}
 
-        return 0;
-    }
+		if (!mouseVisible) {
+			mousePos = Mouse::getPosition();
 
-    int SceneDraw() override {
+			mousePos.x = window.getPosition().x + window.getSize().x / 2.f;
+			mousePos.y = window.getPosition().y + window.getSize().y / 2.f;
 
-        for (int i = 0; i < 960 + 256; i+=256) {
-            for (int j = 0; j < 600 + 256; j+=256) {
-                asset.findSprite("GrassFloor").setPosition(i, j);
-                window.draw(asset.findSprite("GrassFloor"));
-            }
-        }
+			if (!Keyboard::isKeyPressed(Keyboard::Tab)) {
+				cameraManAngle += (window.getPosition().x + window.getSize().x / 2.f - Mouse::getPosition().x) / -10.f;
+			}
 
-        asset.findSprite("MyTank").setPosition(myTank.mySpriteCoor[0], myTank.mySpriteCoor[1]);
-        asset.findSprite("MyTank").setRotation(myTank.mySpriteCoor[2]);
-        window.draw(asset.findSprite("MyTank"));
+			Mouse::setPosition(mousePos);
+		}
 
-        return 0;
-    }
+		angle rotation = cameraManAngle - tankTurretAngle;
+		float turn = 2.f;
 
-private:
-    AssetManager& asset;
+		if (Mouse::isButtonPressed(Mouse::Right)) {
+			turn /= 2.f;
+		}
+
+		if (rotation < 0) {
+			tankTurretAngle -= turn;
+		}
+		else if (0 < rotation) {
+			tankTurretAngle += turn;
+		}
+		if (-turn < rotation && rotation < turn) {
+			tankTurretAngle = cameraManAngle;
+		}
+
+		return 0;
+	}
+
+	int SceneDraw() override {
+
+		renderTexture.clear();
+
+
+		//.setPosition(32, res * windowSize.y / windowSize.x - 32);
+		//tank.setPosition(tankCoor[0], tankCoor[1]);
+		//tank.setRotation(tankCoor[2]);
+
+		//cout << tankCoor[0] << '\t' << tankCoor[1] << endl;
+
+		tankBody.setPosition(tankCoor[0], tankCoor[1]);
+		tankBody.setRotation(tankCoor[2]);
+		
+		tankTurret.setPosition(tankCoor[0], tankCoor[1]);
+		tankTurret.setRotation(tankTurretAngle);
+
+		place.setStalk(tankBody);
+		place.update(
+			-res,
+			-res,
+			res * 4,
+			res * 4
+		);
+		place.draw(tankBody);
+		place.draw(tankTurret);
+		place.display();
+
+		renderTexture.draw(place.getPlace(
+			-res,
+			-res,
+			res * 4,
+			res * 4,
+			-cameraManAngle)
+		);
+
+		//renderTexture.draw(buttonSprite);
+
+		renderTexture.display();
+
+		Sprite textureSprite(renderTexture.getTexture());
+		textureSprite.setScale(windowSize.x / res, windowSize.x / res);
+
+		window.draw(textureSprite);
+
+
+		return 0;
+	}
 };
 
 class SceneManager {
 public:
-    void RunScene(MainWindow& scene) {
-        scene.SceneRun();
-    }
+	void RunScene(MainWindow& scene) {
+		scene.SceneRun();
+	}
 };
 
 int main() {
-    filesystem::path currentPath = filesystem::current_path();
-    cout << "Directory: " << currentPath << endl;
+	//ifstream configFile("config/config.json");
+	//json config;
 
-    AssetManager asset;
+	//if (!configFile.is_open()) {
+	//	cerr << "can't open file!" << endl;
+	//	return 1;
+	//}
 
-    RenderWindow window(VideoMode(960, 600), "RoyalTy-Tank");
-    SceneManager sceneManager;
+	//configFile >> config;
 
-    MenuWindow menu(window, asset);
-    sceneManager.RunScene(menu);
+	//string hello = config["hello"];
 
-    GameWindow game(window, asset);
-    sceneManager.RunScene(game);
+	float& res = resolution[2];
+	bool mouseVisible = true;
 
-    return 0;
+	Place place(res);
+	place.setMap("place1");
+
+	RenderWindow window(VideoMode(960, 600), "RoyalTy-Tank");
+	window.setFramerateLimit(60);
+
+	SceneManager sceneManager;
+
+	RenderTexture renderTexture;
+	MainWindow mainWindow(window, renderTexture, place, res, mouseVisible);
+
+	MenuWindow menu(mainWindow);
+	sceneManager.RunScene(menu);
+
+	GameWindow game(mainWindow);
+	sceneManager.RunScene(game);
+
+	return 0;
 }
