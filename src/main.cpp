@@ -22,24 +22,61 @@ float resolution[] = {
 	2048.f
 };
 
+class angle {
+private:
+	float value = 0;
+
+	float onAccess() {
+
+		while (value < -181) {
+			value += 360;
+		}
+		while (value > 180) {
+			value -= 360;
+		}
+
+		return value;
+	}
+
+public:
+	angle(float v = 0.f) : value(v) {}
+
+	operator float() {
+		return onAccess();
+	}
+
+	angle& operator+=(float rhs) {
+		value += rhs;
+		return *this;
+	}
+	angle& operator-=(float rhs) {
+		value -= rhs;
+		return *this;
+	}
+	angle& operator*=(float rhs) {
+		value *= rhs;
+		return *this;
+	}
+	angle& operator/=(float rhs) {
+		value /= rhs;
+		return *this;
+	}
+};
+
 class MenuWindow : public MainWindow {
 public:
 	Font consolas;
 	Text press;
-	Button button;
-	Sprite buttonSprite;
 
 	MenuWindow(MainWindow& mainWindow)
-		: MainWindow(mainWindow),
-		button("assets/images/buttons/button8.png", _size(0, 0), _size(48, 24)),
-		buttonSprite(button.getTexture())
+		: MainWindow(mainWindow)
 	{
 		if (!consolas.loadFromFile("assets/fonts/Consolas.ttf")) {}
 		press.setFont(consolas);
 		press.setString("PRESS SPACE TO CONTINUE");
-		press.setCharacterSize(64);
+		press.setCharacterSize(16);
 		press.setStyle(1);
-		press.setPosition(0, 500);
+		press.setPosition(145, res / 2);
 
 		cout << "MenuWindow : The necessary assets are included" << endl;
 	}
@@ -56,7 +93,7 @@ public:
 	int SceneDraw() override {
 
 		renderTexture.clear();
-		renderTexture.draw(buttonSprite);
+		renderTexture.draw(press);
 		renderTexture.display();
 
 		return 0;
@@ -65,41 +102,83 @@ public:
 
 class GameWindow : public MainWindow {
 public:
-	Texture grassFloorTex;
-	Texture tankTex;
+	Button button;
+	Sprite buttonSprite;
 
-	Sprite tank;
-	float tankСoor[3] = {256, 256, 90};
-	Sprite grassFloor;
+	Sprite tankBody;
+	Sprite tankTurret;
 
-	GameWindow(MainWindow& mainWindow) : MainWindow(mainWindow) {
-		if (!grassFloorTex.loadFromFile("assets/images/floor/grass.png"));
-		grassFloor.setTexture(grassFloorTex);
+	Texture tankBodyTex;
+	Texture tankTurretTex;
 
-		if (!tankTex.loadFromFile("assets/images/entity/tank.png"));
-		tank.setTexture(tankTex);
-		tank.setOrigin(32, 32);
+	float tankCoor[3] = {512.f, 512.f, 0.f};
+	angle tankTurretAngle = 0.f;
+	angle cameraManAngle = 0.f;
 
-		cout << windowSize.x << endl;
-		cout << windowSize.y << endl;
+	Vector2i mousePos = Mouse::getPosition();
+	
+	GameWindow(MainWindow& mainWindow)
+		: MainWindow(mainWindow),
+		button("assets/images/buttons/button2.png", _size(0, 0), _size(48, 24)),
+		buttonSprite(button.getTexture())
+	{
+		if (!tankBodyTex.loadFromFile("assets/images/entity/tankBody.png"));
+		tankBody.setTexture(tankBodyTex);
+		tankBody.setOrigin(32, 32);
+
+		if (!tankTurretTex.loadFromFile("assets/images/entity/tankTurret.png"));
+		tankTurret.setTexture(tankTurretTex);
+		tankTurret.setOrigin(20, 20);
 	}
 
 	int SceneLogic() override {
 
-		int rotate = static_cast<int>(tankСoor[2]) % 360;
+		int rotate = static_cast<int>(tankCoor[2]) % 360;
 		if (Keyboard::isKeyPressed(Keyboard::W)) {
-			tankСoor[0] += 2.f * sin(rotate * PI / 180);
-			tankСoor[1] -= 2.f * cos(rotate * PI / 180);
+			tankCoor[0] += 2.f * sin(rotate * PI / 180.f);
+			tankCoor[1] -= 2.f * cos(rotate * PI / 180.f);
 		}
 		if (Keyboard::isKeyPressed(Keyboard::S)) {
-			tankСoor[0] -= 2.f * sin(rotate * PI / 180);
-			tankСoor[1] += 2.f * cos(rotate * PI / 180);
+			tankCoor[0] -= 2.f * sin(rotate * PI / 180.f);
+			tankCoor[1] += 2.f * cos(rotate * PI / 180.f);
 		}
 		if (Keyboard::isKeyPressed(Keyboard::A)) {
-			tankСoor[2] -= 1.5f;
+			tankCoor[2] -= 1.5f;
+			tankTurretAngle -= 1.5f;
 		}
 		if (Keyboard::isKeyPressed(Keyboard::D)) {
-			tankСoor[2] += 1.5f;
+			tankCoor[2] += 1.5f;
+			tankTurretAngle += 1.5f;
+		}
+
+		if (!mouseVisible) {
+			mousePos = Mouse::getPosition();
+
+			mousePos.x = window.getPosition().x + window.getSize().x / 2.f;
+			mousePos.y = window.getPosition().y + window.getSize().y / 2.f;
+
+			if (!Keyboard::isKeyPressed(Keyboard::Tab)) {
+				cameraManAngle += (window.getPosition().x + window.getSize().x / 2.f - Mouse::getPosition().x) / -10.f;
+			}
+
+			Mouse::setPosition(mousePos);
+		}
+
+		angle rotation = cameraManAngle - tankTurretAngle;
+		float turn = 2.f;
+
+		if (Mouse::isButtonPressed(Mouse::Right)) {
+			turn /= 2.f;
+		}
+
+		if (rotation < 0) {
+			tankTurretAngle -= turn;
+		}
+		else if (0 < rotation) {
+			tankTurretAngle += turn;
+		}
+		if (-turn < rotation && rotation < turn) {
+			tankTurretAngle = cameraManAngle;
 		}
 
 		return 0;
@@ -109,14 +188,39 @@ public:
 
 		renderTexture.clear();
 
+
 		//.setPosition(32, res * windowSize.y / windowSize.x - 32);
-		tank.setPosition(tankСoor[0], tankСoor[1]);
-		tank.setRotation(tankСoor[2]);
-		place.update();
-		place.draw(tank);
+		//tank.setPosition(tankCoor[0], tankCoor[1]);
+		//tank.setRotation(tankCoor[2]);
+
+		//cout << tankCoor[0] << '\t' << tankCoor[1] << endl;
+
+		tankBody.setPosition(tankCoor[0], tankCoor[1]);
+		tankBody.setRotation(tankCoor[2]);
+		
+		tankTurret.setPosition(tankCoor[0], tankCoor[1]);
+		tankTurret.setRotation(tankTurretAngle);
+
+		place.setStalk(tankBody);
+		place.update(
+			-res,
+			-res,
+			res * 4,
+			res * 4
+		);
+		place.draw(tankBody);
+		place.draw(tankTurret);
 		place.display();
 
-		renderTexture.draw(place.getPlace(tankСoor[0] - res / 2, tankСoor[1] - res / 2, res, res));
+		renderTexture.draw(place.getPlace(
+			-res,
+			-res,
+			res * 4,
+			res * 4,
+			-cameraManAngle)
+		);
+
+		//renderTexture.draw(buttonSprite);
 
 		renderTexture.display();
 
@@ -124,6 +228,7 @@ public:
 		textureSprite.setScale(windowSize.x / res, windowSize.x / res);
 
 		window.draw(textureSprite);
+
 
 		return 0;
 	}
@@ -149,9 +254,11 @@ int main() {
 
 	//string hello = config["hello"];
 
-	Place place("place1");
+	float& res = resolution[2];
+	bool mouseVisible = true;
 
-	float& res = resolution[1];
+	Place place(res);
+	place.setMap("place1");
 
 	RenderWindow window(VideoMode(960, 600), "RoyalTy-Tank");
 	window.setFramerateLimit(60);
@@ -159,7 +266,7 @@ int main() {
 	SceneManager sceneManager;
 
 	RenderTexture renderTexture;
-	MainWindow mainWindow(window, renderTexture, place, res);
+	MainWindow mainWindow(window, renderTexture, place, res, mouseVisible);
 
 	MenuWindow menu(mainWindow);
 	sceneManager.RunScene(menu);

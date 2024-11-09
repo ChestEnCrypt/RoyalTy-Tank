@@ -16,7 +16,7 @@ struct Button : public RenderTexture {
 	Texture texture;
 	_size pos, size, texSize;
 
-	Button(const string path, _size pos, _size __size);
+	Button(const string path, _size __pos, _size __size);
 
 	void setButtonTex(string path);
 	void setButtonSize(_size __size);

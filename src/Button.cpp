@@ -1,8 +1,8 @@
 ﻿#include "Button.hpp"
 
-Button::Button(const string path, _size pos, _size __size) {
+Button::Button(const string path, _size __pos, _size __size) {
 	setButtonTex(path);
-	setButtonPos(pos);
+	setButtonPos(__pos);
 	setButtonSize(__size);
 }
 
