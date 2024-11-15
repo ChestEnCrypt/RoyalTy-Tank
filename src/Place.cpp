@@ -17,33 +17,66 @@ void Place::setMap(string mapId) {
 	if (!mapTexture.loadFromFile(mapPath)) {};
 	mapSprite.setTexture(mapTexture);
 
-	if (!create(res, res)) {}
-	draw(mapSprite);
+	for (int i = 0; i < mapTexture.getSize().x; i += 512) {
+		for (int j = 0; j < mapTexture.getSize().y; j += 512) {
+			mapSprite.setTextureRect(IntRect(i, j, 512, 512));
+			loadedTiles[{ i, j }] = mapSprite.getTexture();
+			mapTiles[{ i, j }] = Sprite(*loadedTiles[{ i, j }]);
+		}
+	}
+
+	if (!create(2 * res, 2 * res)) {}
 }
 
 void Place::setStalk(Sprite& _stalk) {
 	stalk = _stalk;
 }
 
-void Place::update(int x, int y, int X, int Y) {
+void Place::update() {
+	int x = stalk.getPosition().x - res / 2;
+	int y = stalk.getPosition().y - res / 2;
+	int X = stalk.getPosition().x + res / 2;
+	int Y = stalk.getPosition().y + res / 2;
 	clear();
 
-	rendering[0] = x;
-	rendering[1] = y;
+	for (int i = x / 512 * 512; i < X; i += 512) {
+		for (int j = y / 512 * 512; j < Y; j += 512) {
 
-	mapSprite.setTextureRect(IntRect(x, y, X, Y));
-	mapSprite.setPosition(x, y);
+			Sprite s_draw = mapTiles[{ i, j }];
 
-	draw(mapSprite);
+			Vector2f s_pos = s_draw.getPosition();
+			s_pos.x -= stalk.getPosition().x - res;
+			s_pos.y -= stalk.getPosition().y - res;
+			s_draw.setPosition(s_pos);
+
+			draw(s_draw);
+		}
+	}
+
+	size_t d_size = dravable.size();
+
+	for (int i = 0; i < d_size; i++) {
+		Vector2f pos = dravable[i].getPosition();
+		
+		if (x < pos.x && pos.x < X) {
+			if (y < pos.y && pos.y < Y) {
+				Sprite s_draw = dravable[i];
+
+				Vector2f s_pos = s_draw.getPosition();
+				s_pos.x -= stalk.getPosition().x - res;
+				s_pos.y -= stalk.getPosition().y - res;
+				s_draw.setPosition(s_pos);
+
+				draw(s_draw);
+			}
+		}
+	}
+
+	dravable.clear();
 }
 
-void Place::_draw(Sprite sprite) {
-	Vector2f pos = sprite.getPosition();
-	pos.x -= rendering[0];
-	pos.y -= rendering[1];
-	sprite.setPosition(pos);
-
-	draw(sprite);
+void Place::_draw(Sprite& sprite) {
+	dravable.emplace_back(sprite);
 }
 
 Sprite Place::getPlaceNew(int x, int y, int X, int Y, float R) {
@@ -59,7 +92,7 @@ Sprite Place::getPlace(int x, int y, int X, int Y, float R) {
 	Sprite peaceOfSprite;
 	peaceOfSprite.setTexture(peaceOfTexture);
 
-	peaceOfSprite.setOrigin(stalk.getPosition().x + res, stalk.getPosition().y + res);
+	peaceOfSprite.setOrigin(2 * res, 2 * res);
 	peaceOfSprite.setPosition(res / 2.f, res / 1.5f);
 	peaceOfSprite.setRotation(R);
 

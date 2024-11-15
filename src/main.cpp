@@ -26,7 +26,7 @@ class angle {
 private:
 	float value = 0;
 
-	float onAccess() {
+	float onAccess() { 
 
 		while (value < -181) {
 			value += 360;
@@ -188,7 +188,6 @@ public:
 
 		renderTexture.clear();
 
-
 		//.setPosition(32, res * windowSize.y / windowSize.x - 32);
 		//tank.setPosition(tankCoor[0], tankCoor[1]);
 		//tank.setRotation(tankCoor[2]);
@@ -202,21 +201,17 @@ public:
 		tankTurret.setRotation(tankTurretAngle);
 
 		place.setStalk(tankBody);
-		place.update(
-			-res,
-			-res,
-			res * 4,
-			res * 4
-		);
-		place.draw(tankBody);
-		place.draw(tankTurret);
+		place._draw(tankBody);
+		place._draw(tankTurret);
+
+		place.update();
 		place.display();
 
 		renderTexture.draw(place.getPlace(
 			-res,
 			-res,
-			res * 4,
-			res * 4,
+			res * 3,
+			res * 3,
 			-cameraManAngle)
 		);
 

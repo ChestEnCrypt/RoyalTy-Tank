@@ -2,6 +2,7 @@
 #include "SFML/Graphics.hpp"
 #include <iostream>
 #include <string>
+#include <array>
 
 #include <map>
 #include <utility>
@@ -27,16 +28,18 @@ public:
 	Texture mapTexture;
 	Sprite mapSprite;
 
-	map<pair<int, int>, Texture> loadedTiles;
-	Sprite mapTilings[16];
+	map<pair<int, int>, const Texture*> loadedTiles;
+	map<pair<int, int>, Sprite> mapTiles;
+	vector<Sprite> dravable;
 
 	Place(float& res);
 
 	void setMap(string mapId);
 	void setStalk(Sprite& _stalk);
 
-	void update(int x, int y, int X, int Y);
-	void _draw(Sprite sprite);
+	//void update(int x, int y, int X, int Y);
+	void update();
+	void _draw(Sprite& sprite);
 
 	Sprite getPlace(int x, int y, int X, int Y, float R);
 
